@@ -236,6 +236,12 @@ Examples:
       }
     );
 
+  // Show help if no arguments are provided
+  if (process.argv.length <= 2) {
+    program.help();
+    return;
+  }
+
   try {
     await program.parseAsync();
   } catch (error) {

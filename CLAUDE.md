@@ -24,12 +24,13 @@ node dist/mcp-tools-cli.js https://mcp.grep.app
 ### Core Components
 
 **Main CLI File (`mcp-tools-cli.ts`)**
+
 - Single-file CLI that handles all generation logic
 - Contains functions for connecting to MCP servers (HTTP/SSE/Stdio transports)
 - Generates three types of files for each MCP server
 
 **Generated Code Architecture**
-The CLI generates a directory structure like `samples/mcp.grep.app/` with:
+The CLI generates a directory structure like `mcps/mcp.grep.app/` with:
 
 1. **`client.ts`** - Shared MCP client with lazy connection
    - Uses singleton pattern with connection promise deduplication
@@ -59,9 +60,10 @@ The CLI generates a directory structure like `samples/mcp.grep.app/` with:
 ## File Generation Logic
 
 The main generation flow in `mcp-tools-cli.ts`:
+
 1. `fetchToolDefinitions()` - Connects to MCP and lists tools
 2. `generateClientFile()` - Creates shared client with lazy connection
-3. `generateAISDKTool()` - Creates individual tool wrappers  
+3. `generateAISDKTool()` - Creates individual tool wrappers
 4. `generateIndexFile()` - Creates convenience exports with domain-based naming
 
 ## Build System
@@ -69,11 +71,12 @@ The main generation flow in `mcp-tools-cli.ts`:
 - TypeScript compilation to `dist/` directory
 - Target: ES2022 with NodeNext modules
 - Generates declarations and source maps
-- Excludes `samples/` directory from compilation (contains generated output)
+- Excludes `mcps/` directory from compilation (contains generated output)
 
 ## CLI Usage Patterns
 
 The tool supports multiple MCP connection methods:
+
 - HTTP URLs: `mcp-to-ai-sdk https://mcp.grep.app` (uses StreamableHTTP)
 - SSE endpoints: `mcp-to-ai-sdk --sse https://example.com/mcp/sse`
 - Local servers: `mcp-to-ai-sdk /path/to/server.js` (uses Stdio)

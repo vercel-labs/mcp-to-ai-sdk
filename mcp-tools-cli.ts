@@ -28,14 +28,21 @@ async function promptUser(message: string): Promise<boolean> {
   return new Promise((resolve) => {
     rl.question(`${message} (y/N): `, (answer) => {
       rl.close();
-      resolve(answer.toLowerCase().trim() === 'y' || answer.toLowerCase().trim() === 'yes');
+      resolve(
+        answer.toLowerCase().trim() === "y" ||
+          answer.toLowerCase().trim() === "yes"
+      );
     });
   });
 }
 
-async function safeWriteFile(filePath: string, content: string, skipPrompt: boolean = false): Promise<boolean> {
+async function safeWriteFile(
+  filePath: string,
+  content: string,
+  skipPrompt: boolean = false
+): Promise<boolean> {
   const exists = await fileExists(filePath);
-  
+
   if (!exists) {
     // File doesn't exist, safe to write
     await writeFile(filePath, content, "utf-8");
@@ -56,7 +63,9 @@ async function safeWriteFile(filePath: string, content: string, skipPrompt: bool
       return true;
     }
 
-    const shouldOverwrite = await promptUser(`File ${filePath} exists and would be changed. Overwrite?`);
+    const shouldOverwrite = await promptUser(
+      `File ${filePath} exists and would be changed. Overwrite?`
+    );
     if (shouldOverwrite) {
       await writeFile(filePath, content, "utf-8");
       return true;
@@ -73,122 +82,159 @@ async function safeWriteFile(filePath: string, content: string, skipPrompt: bool
 
 async function main() {
   const program = new Command();
-  
+
   program
     .name("mcp-to-ai-sdk")
     .description("CLI tool to generate Vercel AI SDK wrappers for MCP tools")
     .version("1.0.0")
     .argument("<mcp-url-or-path>", "MCP URL or path to server")
-    .option("--sse", "Use Server-Sent Events transport (default: StreamableHttp for URLs)")
-    .option("-y, --yes", "Automatically overwrite existing files without prompting")
-    .option("-H, --header <header>", "Add HTTP header (format: 'Header: value')", (value: string, previous: string[]) => {
-      const headers = previous || [];
-      headers.push(value);
-      return headers;
-    }, [] as string[])
-    .addHelpText("after", `
+    .option(
+      "--sse",
+      "Use Server-Sent Events transport (default: StreamableHttp for URLs)"
+    )
+    .option(
+      "-y, --yes",
+      "Automatically overwrite existing files without prompting"
+    )
+    .option(
+      "-H, --header <header>",
+      "Add HTTP header (format: 'Header: value')",
+      (value: string, previous: string[]) => {
+        const headers = previous || [];
+        headers.push(value);
+        return headers;
+      },
+      [] as string[]
+    )
+    .addHelpText(
+      "after",
+      `
 Examples:
   $ mcp-to-ai-sdk /path/to/mcp-server.js
   $ mcp-to-ai-sdk http://localhost:3000/mcp
   $ mcp-to-ai-sdk --sse https://example.com/mcp/sse
   $ mcp-to-ai-sdk -H 'Authorization: Bearer token' https://api.example.com/mcp
   $ mcp-to-ai-sdk -H 'X-API-Key: key' -H 'Content-Type: application/json' https://api.example.com/mcp
-  $ mcp-to-ai-sdk --yes https://mcp.grep.app`)
-    .action(async (mcpUrlOrPath: string, options: { sse?: boolean; yes?: boolean; header: string[] }) => {
-      const useSSE = options.sse || false;
-      const skipPrompt = options.yes || false;
-      
-      // Parse headers
-      const headers: Record<string, string> = {};
-      try {
-        for (const headerArg of options.header) {
-          const [key, value] = parseHeader(headerArg);
-          headers[key] = value;
-        }
-      } catch (error) {
-        if (error instanceof Error) {
-          console.error("Error:", error.message);
-        } else {
-          console.error("Error parsing headers:", error);
-        }
-        process.exit(1);
-      }
+  $ mcp-to-ai-sdk --yes https://mcp.grep.app`
+    )
+    .action(
+      async (
+        mcpUrlOrPath: string,
+        options: { sse?: boolean; yes?: boolean; header: string[] }
+      ) => {
+        const useSSE = options.sse || false;
+        const skipPrompt = options.yes || false;
 
-      try {
-        const tools = await fetchToolDefinitions(mcpUrlOrPath, useSSE, headers);
-        const basePath = "samples/" + urlToPath(mcpUrlOrPath);
-
-        console.log(`Found ${tools.length} tools from ${mcpUrlOrPath}`);
-        if (Object.keys(headers).length > 0) {
-          console.log(`Using headers: ${Object.keys(headers).join(', ')}`);
-        }
-        console.log(`Generating AI SDK wrappers in: ${basePath}/`);
-
-        // Ensure directory exists
-        await mkdir(basePath, { recursive: true });
-
-        // Generate shared client file first
-        const clientPath = join(basePath, "client.ts");
-        const clientCode = generateClientFile(mcpUrlOrPath, useSSE, headers);
-        const formattedClientCode = await formatCode(clientCode, clientPath);
-        const clientWritten = await safeWriteFile(clientPath, formattedClientCode, skipPrompt);
-        if (clientWritten) {
-          console.log(`Generated: ${clientPath} ✓`);
+        // Parse headers
+        const headers: Record<string, string> = {};
+        try {
+          for (const headerArg of options.header) {
+            const [key, value] = parseHeader(headerArg);
+            headers[key] = value;
+          }
+        } catch (error) {
+          if (error instanceof Error) {
+            console.error("Error:", error.message);
+          } else {
+            console.error("Error parsing headers:", error);
+          }
+          process.exit(1);
         }
 
-        const generatedTools: string[] = [];
+        try {
+          const tools = await fetchToolDefinitions(
+            mcpUrlOrPath,
+            useSSE,
+            headers
+          );
+          const basePath = "mcps/" + urlToPath(mcpUrlOrPath);
 
-        for (const tool of tools) {
-          try {
-            const sanitizedName = validateToolName(tool.name);
-            const filePath = join(basePath, `${sanitizedName}.ts`);
-            const toolCode = generateAISDKTool(tool, mcpUrlOrPath, useSSE);
-            const formattedToolCode = await formatCode(toolCode, filePath);
+          console.log(`Found ${tools.length} tools from ${mcpUrlOrPath}`);
+          if (Object.keys(headers).length > 0) {
+            console.log(`Using headers: ${Object.keys(headers).join(", ")}`);
+          }
+          console.log(`Generating AI SDK wrappers in: ${basePath}/`);
 
-            // Write the tool file
-            const toolWritten = await safeWriteFile(filePath, formattedToolCode, skipPrompt);
-            if (toolWritten) {
-              console.log(`Generated: ${filePath} ✓`);
-              generatedTools.push(sanitizedName);
-            }
-          } catch (error) {
-            if (error instanceof Error) {
-              console.error(
-                `Failed to generate tool ${tool.name}: ${error.message}`
+          // Ensure directory exists
+          await mkdir(basePath, { recursive: true });
+
+          // Generate shared client file first
+          const clientPath = join(basePath, "client.ts");
+          const clientCode = generateClientFile(mcpUrlOrPath, useSSE, headers);
+          const formattedClientCode = await formatCode(clientCode, clientPath);
+          const clientWritten = await safeWriteFile(
+            clientPath,
+            formattedClientCode,
+            skipPrompt
+          );
+          if (clientWritten) {
+            console.log(`Generated: ${clientPath} ✓`);
+          }
+
+          const generatedTools: string[] = [];
+
+          for (const tool of tools) {
+            try {
+              const sanitizedName = validateToolName(tool.name);
+              const filePath = join(basePath, `${sanitizedName}.ts`);
+              const toolCode = generateAISDKTool(tool, mcpUrlOrPath, useSSE);
+              const formattedToolCode = await formatCode(toolCode, filePath);
+
+              // Write the tool file
+              const toolWritten = await safeWriteFile(
+                filePath,
+                formattedToolCode,
+                skipPrompt
               );
-            } else {
-              console.error(`Failed to generate tool ${tool.name}: Unknown error`);
+              if (toolWritten) {
+                console.log(`Generated: ${filePath} ✓`);
+                generatedTools.push(sanitizedName);
+              }
+            } catch (error) {
+              if (error instanceof Error) {
+                console.error(
+                  `Failed to generate tool ${tool.name}: ${error.message}`
+                );
+              } else {
+                console.error(
+                  `Failed to generate tool ${tool.name}: Unknown error`
+                );
+              }
+              // Continue with other tools instead of failing completely
+              continue;
             }
-            // Continue with other tools instead of failing completely
-            continue;
           }
-        }
 
-        // Generate index.ts file that exports all tools
-        if (generatedTools.length > 0) {
-          const indexPath = join(basePath, "index.ts");
-          const indexCode = generateIndexFile(generatedTools, mcpUrlOrPath);
-          const formattedIndexCode = await formatCode(indexCode, indexPath);
+          // Generate index.ts file that exports all tools
+          if (generatedTools.length > 0) {
+            const indexPath = join(basePath, "index.ts");
+            const indexCode = generateIndexFile(generatedTools, mcpUrlOrPath);
+            const formattedIndexCode = await formatCode(indexCode, indexPath);
 
-          const indexWritten = await safeWriteFile(indexPath, formattedIndexCode, skipPrompt);
-          if (indexWritten) {
-            console.log(`Generated: ${indexPath} ✓`);
+            const indexWritten = await safeWriteFile(
+              indexPath,
+              formattedIndexCode,
+              skipPrompt
+            );
+            if (indexWritten) {
+              console.log(`Generated: ${indexPath} ✓`);
+            }
           }
-        }
 
-        console.log(
-          `\nGenerated ${tools.length} AI SDK tool wrappers successfully!`
-        );
-        process.exit(0);
-      } catch (error) {
-        if (error instanceof Error) {
-          console.error("Error fetching tool definitions:", error.message);
-        } else {
-          console.error("Error fetching tool definitions:", error);
+          console.log(
+            `\nGenerated ${tools.length} AI SDK tool wrappers successfully!`
+          );
+          process.exit(0);
+        } catch (error) {
+          if (error instanceof Error) {
+            console.error("Error fetching tool definitions:", error.message);
+          } else {
+            console.error("Error fetching tool definitions:", error);
+          }
+          process.exit(1);
         }
-        process.exit(1);
       }
-    });
+    );
 
   try {
     await program.parseAsync();

@@ -4,8 +4,8 @@ A CLI tool that generates Vercel AI SDK stubs for Model Context Protocol (MCP) t
 
 Why would you do this over using the MCP directly:
 
-- Security: Prevents possible prompt injection from unexpected changes to the MCP server.
-- Security: Prevents security issues from unexpected new tools (e.g. when the server introduces a new delete function).
+- Security: Prevents possible prompt injection from unexpected changes to the MCP server tool definitions.
+- Security: Prevents security issues from unexpected new tools (e.g. when the server introduces a new delete function which your agent is not expected to call).
 - Security: Allows overridding tool implementations with narrower arguments. E.g. by limiting queries to a single tenant or similar specialization of broad tools.
 - Quality: Prevents quality regressions from unexpected changes to the MCP server.
 - Quality: Allows tuning of tool call precision in the context of your project.
@@ -13,10 +13,6 @@ Why would you do this over using the MCP directly:
 ## Installation
 
 ```bash
-# Install globally
-npm install -g mcp-to-ai-sdk
-
-# Or use with npx
 npx mcp-to-ai-sdk <MCP_URL_OR_PATH>
 ```
 
@@ -24,23 +20,23 @@ npx mcp-to-ai-sdk <MCP_URL_OR_PATH>
 
 ```bash
 # Generate wrappers for HTTP MCP endpoints (uses StreamableHttp by default)
-mcp-to-ai-sdk https://mcp.grep.app
+npx mcp-to-ai-sdk https://mcp.grep.app
 
 # Use Server-Sent Events transport
-mcp-to-ai-sdk --sse https://example.com/mcp/sse
+npx mcp-to-ai-sdk --sse https://example.com/mcp/sse
 
 # Generate wrappers for local MCP servers
-mcp-to-ai-sdk /path/to/mcp-server.js
+npx mcp-to-ai-sdk /path/to/mcp-server.js
 
 # Add authentication headers for protected MCP endpoints
-mcp-to-ai-sdk -H 'Authorization: Bearer your-token' https://api.example.com/mcp
-mcp-to-ai-sdk -H 'X-API-Key: your-key' -H 'Authorization: Bearer your-token' https://api.example.com/mcp
+npx mcp-to-ai-sdk -H 'Authorization: Bearer your-token' https://api.example.com/mcp
+npx mcp-to-ai-sdk -H 'X-API-Key: your-key' -H 'Authorization: Bearer your-token' https://api.example.com/mcp
 ```
 
 ## Generated File Structure
 
 ```
-samples/mcp.grep.app/
+mcps/mcp.grep.app/
 ├── client.ts          # Shared MCP client with lazy connection
 ├── index.ts           # Domain-based exports (mcpGrepTools)
 └── searchGitHub.ts    # Individual tool implementation
@@ -97,7 +93,7 @@ export const searchGitHubTool = tool({
 ```typescript
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import mcpGrep from "./samples/mcp.grep.app/index.js"; // Domain-based export name
+import mcpGrep from "./mcps/mcp.grep.app/index.js"; // Domain-based export name
 
 const result = await generateText({
   model: openai("gpt-4"),
@@ -111,7 +107,7 @@ const result = await generateText({
 ```typescript
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { searchGitHubTool } from "./samples/mcp.grep.app/index.js";
+import { searchGitHubTool } from "./mcps/mcp.grep.app/index.js";
 
 const result = await generateText({
   model: openai("gpt-4"),
@@ -127,7 +123,7 @@ const result = await generateText({
 ```typescript
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { searchGitHubTool } from "./samples/mcp.grep.app/searchGitHub.js";
+import { searchGitHubTool } from "./mcps/mcp.grep.app/searchGitHub.js";
 
 const result = await generateText({
   model: openai("gpt-4"),
@@ -147,15 +143,19 @@ When using `-H` flags to pass headers during tool discovery:
 - You'll need to replace the TODO placeholders with actual values in your runtime environment
 
 Example generated client with headers:
+
 ```typescript
-const transport = new StreamableHTTPClientTransport(new URL("https://api.example.com/mcp"), { 
-  requestInit: { 
-    headers: {
-      "Authorization": "TODO: Replace with your actual value",
-      "X-API-Key": "TODO: Replace with your actual value"
-    } 
-  } 
-});
+const transport = new StreamableHTTPClientTransport(
+  new URL("https://api.example.com/mcp"),
+  {
+    requestInit: {
+      headers: {
+        Authorization: "TODO: Replace with your actual value",
+        "X-API-Key": "TODO: Replace with your actual value",
+      },
+    },
+  }
+);
 ```
 
 ## Supported Transports

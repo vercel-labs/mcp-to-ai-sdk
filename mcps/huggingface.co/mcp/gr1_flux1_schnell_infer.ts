@@ -8,8 +8,7 @@ export const gr1_flux1_schnell_inferToolWithClient = (
   getClient: () => Promise<Client> | Client,
 ) =>
   tool({
-    description:
-      "Generate an image using the Flux 1 Schnell Image Generator. (from evalstate/flux1_schnell)",
+    description: `Generate an image using the Flux 1 Schnell Image Generator. (from evalstate/flux1_schnell)`,
     inputSchema: z
       .object({
         prompt: z

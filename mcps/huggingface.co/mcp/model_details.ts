@@ -8,8 +8,7 @@ export const model_detailsToolWithClient = (
   getClient: () => Promise<Client> | Client,
 ) =>
   tool({
-    description:
-      "Get detailed information about a model from the Hugging Face Hub. Include relevant links in result summaries.",
+    description: `Get detailed information about a model from the Hugging Face Hub. Include relevant links in result summaries.`,
     inputSchema: z
       .object({
         model_id: z

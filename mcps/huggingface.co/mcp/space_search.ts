@@ -8,8 +8,7 @@ export const space_searchToolWithClient = (
   getClient: () => Promise<Client> | Client,
 ) =>
   tool({
-    description:
-      "Find Hugging Face Spaces using semantic search. Include links to the Space when presenting the results.",
+    description: `Find Hugging Face Spaces using semantic search. Include links to the Space when presenting the results.`,
     inputSchema: z
       .object({
         query: z.string().min(1).max(100).describe("Semantic Search Query"),

@@ -8,14 +8,33 @@ export const searchGitHubToolWithClient = (
   getClient: () => Promise<Client> | Client,
 ) =>
   tool({
-    description:
-      "Find real-world code examples from over a million public GitHub repositories to help answer programming questions.\n\n**IMPORTANT: This tool searches for literal code patterns (like grep), not keywords. Search for actual code that would appear in files:**\n- ✅ Good: 'useState(', 'import React from', 'async function', '(?s)try {.*await'\n- ❌ Bad: 'react tutorial', 'best practices', 'how to use'\n\n**When to use this tool:**\n- When implementing unfamiliar APIs or libraries and need to see real usage patterns\n- When unsure about correct syntax, parameters, or configuration for a specific library\n- When looking for production-ready examples and best practices for implementation\n- When needing to understand how different libraries or frameworks work together\n\n**Perfect for questions like:**\n- \"How do developers handle authentication in Next.js apps?\" → Search: 'getServerSession' with language=['TypeScript', 'TSX']\n- \"What are common React error boundary patterns?\" → Search: 'ErrorBoundary' with language=['TSX']\n- \"Show me real useEffect cleanup examples\" → Search: '(?s)useEffect\\(\\(\\) => {.*removeEventListener' with useRegexp=true\n- \"How do developers handle CORS in Flask applications?\" → Search: 'CORS(' with matchCase=true and language=['Python']\n\nUse regular expressions with useRegexp=true for flexible patterns like '(?s)useState\\(.*loading' to find useState hooks with loading-related variables. Prefix the pattern with '(?s)' to match across multiple lines.\n\nFilter by language, repository, or file path to narrow results.",
+    description: `Find real-world code examples from over a million public GitHub repositories to help answer programming questions.
+
+**IMPORTANT: This tool searches for literal code patterns (like grep), not keywords. Search for actual code that would appear in files:**
+- ✅ Good: 'useState(', 'import React from', 'async function', '(?s)try {.*await'
+- ❌ Bad: 'react tutorial', 'best practices', 'how to use'
+
+**When to use this tool:**
+- When implementing unfamiliar APIs or libraries and need to see real usage patterns
+- When unsure about correct syntax, parameters, or configuration for a specific library
+- When looking for production-ready examples and best practices for implementation
+- When needing to understand how different libraries or frameworks work together
+
+**Perfect for questions like:**
+- "How do developers handle authentication in Next.js apps?" → Search: 'getServerSession' with language=['TypeScript', 'TSX']
+- "What are common React error boundary patterns?" → Search: 'ErrorBoundary' with language=['TSX']
+- "Show me real useEffect cleanup examples" → Search: '(?s)useEffect\(\(\) => {.*removeEventListener' with useRegexp=true
+- "How do developers handle CORS in Flask applications?" → Search: 'CORS(' with matchCase=true and language=['Python']
+
+Use regular expressions with useRegexp=true for flexible patterns like '(?s)useState\(.*loading' to find useState hooks with loading-related variables. Prefix the pattern with '(?s)' to match across multiple lines.
+
+Filter by language, repository, or file path to narrow results.`,
     inputSchema: z
       .object({
         query: z
           .string()
           .describe(
-            "The literal code pattern to search for (e.g., 'useState(', 'export function'). Use actual code that would appear in files, not keywords or questions.",
+            `The literal code pattern to search for (e.g., 'useState(', 'export function'). Use actual code that would appear in files, not keywords or questions.`,
           ),
         matchCase: z
           .boolean()
@@ -32,19 +51,24 @@ export const searchGitHubToolWithClient = (
         repo: z
           .string()
           .describe(
-            "Filter by repository.\n            Examples: 'facebook/react', 'microsoft/vscode', 'vercel/ai'.\n            Can match partial names, for example 'vercel/' will find repositories in the vercel org.",
+            `Filter by repository.
+            Examples: 'facebook/react', 'microsoft/vscode', 'vercel/ai'.
+            Can match partial names, for example 'vercel/' will find repositories in the vercel org.`,
           )
           .optional(),
         path: z
           .string()
           .describe(
-            "Filter by file path.\n            Examples: 'src/components/Button.tsx', 'README.md'.\n            Can match partial paths, for example '/route.ts' will find route.ts files at any level.",
+            `Filter by file path.
+            Examples: 'src/components/Button.tsx', 'README.md'.
+            Can match partial paths, for example '/route.ts' will find route.ts files at any level.`,
           )
           .optional(),
         language: z
           .array(z.string())
           .describe(
-            "Filter by programming language.\n            Examples: ['TypeScript', 'TSX'], ['JavaScript'], ['Python'], ['Java'], ['C#'], ['Markdown'], ['YAML']",
+            `Filter by programming language.
+            Examples: ['TypeScript', 'TSX'], ['JavaScript'], ['Python'], ['Java'], ['C#'], ['Markdown'], ['YAML']`,
           )
           .optional(),
       })

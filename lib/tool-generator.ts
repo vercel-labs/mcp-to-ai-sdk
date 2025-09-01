@@ -18,6 +18,13 @@ export function validateToolName(name: string): string {
 }
 
 function escapeStringForTypeScript(str: string): string {
+  // Check if the string contains newlines or is long enough to benefit from template literals
+  if (str.includes('\n') || str.length > 80) {
+    // Use template literal for multi-line strings
+    const escaped = str.replace(/`/g, '\\`').replace(/\${/g, '\\${');
+    return `\`${escaped}\``;
+  }
+  // Use JSON.stringify for simple strings
   return JSON.stringify(str);
 }
 
@@ -30,7 +37,25 @@ function generateZodSchema(schema: any): string {
     const zodSchema = jsonSchemaToZod(schema);
     // Remove the outer z.object() wrapper since we'll add it in the template
     const match = zodSchema.match(/^z\.object\(([\s\S]*)\)$/);
-    const innerSchema = match ? match[1] : zodSchema;
+    let innerSchema = match ? match[1] : zodSchema;
+    
+    // Post-process to convert multi-line strings in .describe() calls to template literals
+    innerSchema = innerSchema.replace(
+      /\.describe\(("(?:[^"\\]|\\.)*")\)/g, 
+      (match, quotedString) => {
+        try {
+          // Parse the quoted string to get the actual content
+          const description = JSON.parse(quotedString);
+          // Use our escaping function to decide between quotes and template literals
+          const escaped = escapeStringForTypeScript(description);
+          return `.describe(${escaped})`;
+        } catch (e) {
+          // If parsing fails, return the original
+          return match;
+        }
+      }
+    );
+    
     return innerSchema;
   } catch (error) {
     // Fallback to manual generation if json-schema-to-zod fails

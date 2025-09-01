@@ -8,8 +8,7 @@ export const paper_searchToolWithClient = (
   getClient: () => Promise<Client> | Client,
 ) =>
   tool({
-    description:
-      "Find Machine Learning research papers on the Hugging Face hub. Include 'Link to paper' When presenting the results. Consider whether tabulating results matches user intent.",
+    description: `Find Machine Learning research papers on the Hugging Face hub. Include 'Link to paper' When presenting the results. Consider whether tabulating results matches user intent.`,
     inputSchema: z
       .object({
         query: z.string().min(3).max(200).describe("Semantic Search query"),
@@ -20,7 +19,7 @@ export const paper_searchToolWithClient = (
         concise_only: z
           .boolean()
           .describe(
-            "Return a 2 sentence summary of the abstract. Use for broad search terms which may return a lot of results. Check with User if unsure.",
+            `Return a 2 sentence summary of the abstract. Use for broad search terms which may return a lot of results. Check with User if unsure.`,
           )
           .default(false),
       })

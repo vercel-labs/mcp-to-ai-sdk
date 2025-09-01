@@ -8,8 +8,7 @@ export const hf_whoamiToolWithClient = (
   getClient: () => Promise<Client> | Client,
 ) =>
   tool({
-    description:
-      "Hugging Face tools are being used anonymously and may be rate limited. Call this tool for instructions on joining and authenticating.",
+    description: `Hugging Face tools are being used anonymously and may be rate limited. Call this tool for instructions on joining and authenticating.`,
     inputSchema: z.object({}).strict(),
     execute: async (args): Promise<string> => {
       const client = await getClient();

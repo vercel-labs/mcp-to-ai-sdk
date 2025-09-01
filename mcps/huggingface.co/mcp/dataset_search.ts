@@ -8,26 +8,25 @@ export const dataset_searchToolWithClient = (
   getClient: () => Promise<Client> | Client,
 ) =>
   tool({
-    description:
-      "Find Datasets hosted on the Hugging Face hub. Returns comprehensive information about matching datasets including downloads, likes, tags, and direct links. Include links to the datasets in your response",
+    description: `Find Datasets hosted on the Hugging Face hub. Returns comprehensive information about matching datasets including downloads, likes, tags, and direct links. Include links to the datasets in your response`,
     inputSchema: z
       .object({
         query: z
           .string()
           .describe(
-            'Search term. Leave blank and specify "sort" and "limit" to get e.g. "Top 20 trending datasets", "Top 10 most recent datasets" etc" ',
+            `Search term. Leave blank and specify "sort" and "limit" to get e.g. "Top 20 trending datasets", "Top 10 most recent datasets" etc" `,
           )
           .optional(),
         author: z
           .string()
           .describe(
-            "Organization or user who created the dataset (e.g., 'google', 'facebook', 'allenai')",
+            `Organization or user who created the dataset (e.g., 'google', 'facebook', 'allenai')`,
           )
           .optional(),
         tags: z
           .array(z.string())
           .describe(
-            "Tags to filter datasets (e.g., ['language:en', 'size_categories:1M<n<10M', 'task_categories:text-classification'])",
+            `Tags to filter datasets (e.g., ['language:en', 'size_categories:1M<n<10M', 'task_categories:text-classification'])`,
           )
           .optional(),
         sort: z

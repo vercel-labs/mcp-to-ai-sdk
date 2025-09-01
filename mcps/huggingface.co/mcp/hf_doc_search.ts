@@ -8,15 +8,14 @@ export const hf_doc_searchToolWithClient = (
   getClient: () => Promise<Client> | Client,
 ) =>
   tool({
-    description:
-      "Search documentation about all of Hugging Face products and libraries (Transformers, Datasets, Diffusers, Gradio, Hub, and more). Use this for the most up-to-date information Returns excerpts grouped by Product and Document.",
+    description: `Search documentation about all of Hugging Face products and libraries (Transformers, Datasets, Diffusers, Gradio, Hub, and more). Use this for the most up-to-date information Returns excerpts grouped by Product and Document.`,
     inputSchema: z
       .object({
         query: z.string().min(3).max(200).describe("Semantic search query"),
         product: z
           .string()
           .describe(
-            'Filter by Product (e.g., "hub", "dataset-viewer", "transformers"). Supply when known for focused results',
+            `Filter by Product (e.g., "hub", "dataset-viewer", "transformers"). Supply when known for focused results`,
           )
           .optional(),
       })

@@ -8,20 +8,19 @@ export const model_searchToolWithClient = (
   getClient: () => Promise<Client> | Client,
 ) =>
   tool({
-    description:
-      "Find Machine Learning models hosted on Hugging Face. Returns comprehensive information about matching models including downloads, likes, tags, and direct links. Include links to the models in your response",
+    description: `Find Machine Learning models hosted on Hugging Face. Returns comprehensive information about matching models including downloads, likes, tags, and direct links. Include links to the models in your response`,
     inputSchema: z
       .object({
         query: z
           .string()
           .describe(
-            'Search term. Leave blank and specify "sort" and "limit" to get e.g. "Top 20 trending models", "Top 10 most recent models" etc" ',
+            `Search term. Leave blank and specify "sort" and "limit" to get e.g. "Top 20 trending models", "Top 10 most recent models" etc" `,
           )
           .optional(),
         author: z
           .string()
           .describe(
-            "Organization or user who created the model (e.g., 'google', 'meta-llama', 'microsoft')",
+            `Organization or user who created the model (e.g., 'google', 'meta-llama', 'microsoft')`,
           )
           .optional(),
         task: z

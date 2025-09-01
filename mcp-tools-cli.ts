@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir, writeFile, readFile, access, constants } from "fs/promises";
 import { join } from "path";
+import { createInterface } from "readline";
 import { Command } from "commander";
 import { generateAISDKTool, validateToolName } from "./lib/tool-generator.js";
 import { generateClientFile } from "./lib/client-generator.js";
@@ -9,6 +10,66 @@ import { fetchToolDefinitions } from "./lib/mcp-client.js";
 import { urlToPath, parseHeader } from "./lib/utils.js";
 import { formatCode } from "./lib/formatter.js";
 
+async function fileExists(filePath: string): Promise<boolean> {
+  try {
+    await access(filePath, constants.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function promptUser(message: string): Promise<boolean> {
+  const rl = createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve) => {
+    rl.question(`${message} (y/N): `, (answer) => {
+      rl.close();
+      resolve(answer.toLowerCase().trim() === 'y' || answer.toLowerCase().trim() === 'yes');
+    });
+  });
+}
+
+async function safeWriteFile(filePath: string, content: string, skipPrompt: boolean = false): Promise<boolean> {
+  const exists = await fileExists(filePath);
+  
+  if (!exists) {
+    // File doesn't exist, safe to write
+    await writeFile(filePath, content, "utf-8");
+    return true;
+  }
+
+  // File exists, check if content is different
+  try {
+    const existingContent = await readFile(filePath, "utf-8");
+    if (existingContent === content) {
+      // Content is the same, no need to write
+      return true;
+    }
+
+    // Content is different, prompt user unless skipPrompt is true
+    if (skipPrompt) {
+      await writeFile(filePath, content, "utf-8");
+      return true;
+    }
+
+    const shouldOverwrite = await promptUser(`File ${filePath} exists and would be changed. Overwrite?`);
+    if (shouldOverwrite) {
+      await writeFile(filePath, content, "utf-8");
+      return true;
+    } else {
+      console.log(`Skipped: ${filePath}`);
+      return false;
+    }
+  } catch (error) {
+    // If we can't read the existing file, treat it as safe to write
+    await writeFile(filePath, content, "utf-8");
+    return true;
+  }
+}
 
 async function main() {
   const program = new Command();
@@ -19,6 +80,7 @@ async function main() {
     .version("1.0.0")
     .argument("<mcp-url-or-path>", "MCP URL or path to server")
     .option("--sse", "Use Server-Sent Events transport (default: StreamableHttp for URLs)")
+    .option("-y, --yes", "Automatically overwrite existing files without prompting")
     .option("-H, --header <header>", "Add HTTP header (format: 'Header: value')", (value: string, previous: string[]) => {
       const headers = previous || [];
       headers.push(value);
@@ -30,9 +92,11 @@ Examples:
   $ mcp-to-ai-sdk http://localhost:3000/mcp
   $ mcp-to-ai-sdk --sse https://example.com/mcp/sse
   $ mcp-to-ai-sdk -H 'Authorization: Bearer token' https://api.example.com/mcp
-  $ mcp-to-ai-sdk -H 'X-API-Key: key' -H 'Content-Type: application/json' https://api.example.com/mcp`)
-    .action(async (mcpUrlOrPath: string, options: { sse?: boolean; header: string[] }) => {
+  $ mcp-to-ai-sdk -H 'X-API-Key: key' -H 'Content-Type: application/json' https://api.example.com/mcp
+  $ mcp-to-ai-sdk --yes https://mcp.grep.app`)
+    .action(async (mcpUrlOrPath: string, options: { sse?: boolean; yes?: boolean; header: string[] }) => {
       const useSSE = options.sse || false;
+      const skipPrompt = options.yes || false;
       
       // Parse headers
       const headers: Record<string, string> = {};
@@ -67,8 +131,10 @@ Examples:
         const clientPath = join(basePath, "client.ts");
         const clientCode = generateClientFile(mcpUrlOrPath, useSSE, headers);
         const formattedClientCode = await formatCode(clientCode, clientPath);
-        await writeFile(clientPath, formattedClientCode, "utf-8");
-        console.log(`Generated: ${clientPath} ✓`);
+        const clientWritten = await safeWriteFile(clientPath, formattedClientCode, skipPrompt);
+        if (clientWritten) {
+          console.log(`Generated: ${clientPath} ✓`);
+        }
 
         const generatedTools: string[] = [];
 
@@ -80,10 +146,11 @@ Examples:
             const formattedToolCode = await formatCode(toolCode, filePath);
 
             // Write the tool file
-            await writeFile(filePath, formattedToolCode, "utf-8");
-
-            console.log(`Generated: ${filePath} ✓`);
-            generatedTools.push(sanitizedName);
+            const toolWritten = await safeWriteFile(filePath, formattedToolCode, skipPrompt);
+            if (toolWritten) {
+              console.log(`Generated: ${filePath} ✓`);
+              generatedTools.push(sanitizedName);
+            }
           } catch (error) {
             if (error instanceof Error) {
               console.error(
@@ -103,8 +170,10 @@ Examples:
           const indexCode = generateIndexFile(generatedTools, mcpUrlOrPath);
           const formattedIndexCode = await formatCode(indexCode, indexPath);
 
-          await writeFile(indexPath, formattedIndexCode, "utf-8");
-          console.log(`Generated: ${indexPath} ✓`);
+          const indexWritten = await safeWriteFile(indexPath, formattedIndexCode, skipPrompt);
+          if (indexWritten) {
+            console.log(`Generated: ${indexPath} ✓`);
+          }
         }
 
         console.log(

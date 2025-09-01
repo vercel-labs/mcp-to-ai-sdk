@@ -1,0 +1,40 @@
+{
+  "name": "mcp-to-ai-sdk",
+  "version": "1.0.0",
+  "description": "CLI tool to generate Vercel AI SDK wrappers for MCP tools",
+  "main": "dist/mcp-tools-cli.js",
+  "bin": {
+    "mcp-to-ai-sdk": "dist/mcp-tools-cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "pnpm run build && dist/mcp-tools-cli.js",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mcp",
+    "ai",
+    "vercel",
+    "ai-sdk",
+    "cli",
+    "tools",
+    "model-context-protocol"
+  ],
+  "author": "",
+  "license": "ISC",
+  "files": [
+    "dist/**/*"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.4",
+    "ai": "^5.0.29",
+    "json-schema-to-zod": "^2.6.1",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}

@@ -10,6 +10,8 @@ Why would you do this over using the MCP directly:
 - Quality: Prevents quality regressions from unexpected changes to the MCP server.
 - Quality: Allows tuning of tool call precision in the context of your project.
 
+[See samples of generated output.](https://github.com/vercel-labs/mcp-to-ai-sdk/tree/main/mcps)
+
 ## Installation
 
 ```bash

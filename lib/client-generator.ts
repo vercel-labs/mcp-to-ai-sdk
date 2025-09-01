@@ -13,20 +13,25 @@ export function generateClientFile(
   const transportImport = useSSE ? "sse" : "streamableHttp";
 
   const hasHeaders = Object.keys(headers).length > 0;
-  let requestInit = '';
+  let requestInit = "";
   if (hasHeaders) {
-    if (useSSE) {
-      requestInit = `, { requestInit: { headers: ${JSON.stringify(headers)} } }`;
-    } else {
-      requestInit = `, { requestInit: { headers: ${JSON.stringify(headers)} } }`;
-    }
+    // Replace header values with TODO placeholders to avoid embedding secrets
+    const todoHeaders = Object.keys(headers).reduce((acc, key) => {
+      acc[key] = "TODO: Replace with your actual value";
+      return acc;
+    }, {} as Record<string, string>);
+
+    requestInit = `, { requestInit: { headers: ${JSON.stringify(
+      todoHeaders,
+      null,
+      2
+    )} } }`;
   }
 
   return `import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { ${transportType} } from '@modelcontextprotocol/sdk/client/${transportImport}.js';
 
 let connectionPromise: Promise<Client> | null = null;
-
 export async function getMcpClient(): Promise<Client> {
 
   if (connectionPromise) {

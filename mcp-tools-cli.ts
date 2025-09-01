@@ -51,10 +51,6 @@ function generateAISDKTool(
 ): string {
   // Validate and sanitize tool name
   const toolName = validateToolName(tool.name);
-  const transportType = useSSE
-    ? "SSEClientTransport"
-    : "StreamableHTTPClientTransport";
-  const transportImport = useSSE ? "sse" : "streamableHttp";
 
   // Validate URL
   try {
@@ -70,52 +66,81 @@ function generateAISDKTool(
   }
 
   return `import { tool } from 'ai';
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { ${transportType} } from '@modelcontextprotocol/sdk/client/${transportImport}.js';
+import { type Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { z } from 'zod';
 
 // Auto-generated wrapper for MCP tool: ${tool.name}
 // Source: ${mcpUrl}
-export const ${toolName}Tool = tool({
+export const ${toolName}ToolWithClient = (getClient: () => Promise<Client> | Client) => tool({
   description: ${escapeStringForTypeScript(tool.description || "")},
   inputSchema: z.object(${schemaCode}),
   execute: async (args): Promise<string> => {
-    const transport = new ${transportType}(new URL(${escapeStringForTypeScript(
-    mcpUrl
-  )}));
-    const client = new Client(
-      {
-        name: "ai-sdk-mcp-wrapper",
-        version: "1.0.0"
-      },
-      {
-        capabilities: {}
-      }
-    );
-
-    try {
-      await client.connect(transport);
-      
-      const result = await client.callTool({
-        name: ${escapeStringForTypeScript(tool.name)},
-        arguments: args
-      });
-      
-      // Handle different content types from MCP
-      if (Array.isArray(result.content)) {
-        return result.content
-          .map((item: unknown) => typeof item === 'string' ? item : JSON.stringify(item))
-          .join('\\n');
-      } else if (typeof result.content === 'string') {
-        return result.content;
-      } else {
-        return JSON.stringify(result.content);
-      }
-    } finally {
-      await client.close();
+    const client = await getClient();
+    const result = await client.callTool({
+      name: ${escapeStringForTypeScript(tool.name)},
+      arguments: args
+    });
+    
+    // Handle different content types from MCP
+    if (Array.isArray(result.content)) {
+      return result.content
+        .map((item: unknown) => typeof item === 'string' ? item : JSON.stringify(item))
+        .join('\\n');
+    } else if (typeof result.content === 'string') {
+      return result.content;
+    } else {
+      return JSON.stringify(result.content);
     }
   }
 });
+`;
+}
+
+function generateClientFile(mcpUrl: string, useSSE: boolean): string {
+  const transportType = useSSE
+    ? "SSEClientTransport"
+    : "StreamableHTTPClientTransport";
+  const transportImport = useSSE ? "sse" : "streamableHttp";
+
+  return `import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { ${transportType} } from '@modelcontextprotocol/sdk/client/${transportImport}.js';
+
+let connectionPromise: Promise<Client> | null = null;
+
+export async function getMcpClient(): Promise<Client> {
+
+  if (connectionPromise) {
+    return connectionPromise;
+  }
+
+  return connectionPromise = connectToMcp();
+}
+
+async function connectToMcp(): Promise<Client> {
+  const transport = new ${transportType}(new URL(${escapeStringForTypeScript(
+    mcpUrl
+  )}));
+  const client = new Client(
+    {
+      name: "ai-sdk-mcp-wrapper",
+      version: "1.0.0"
+    },
+    {
+      capabilities: {}
+    }
+  );
+  await client.connect(transport)
+  return client;
+}
+
+// Optional: Add cleanup function for graceful shutdown
+export async function closeMcpClient(): Promise<void> {
+  if (connectionPromise) {
+    const client = await connectionPromise;
+    await client.close();
+    connectionPromise = null;
+  }
+}
 `;
 }
 
@@ -143,25 +168,40 @@ function generateZodSchema(schema: any): string {
 
 function generateIndexFile(toolNames: string[], mcpUrl: string): string {
   const imports = toolNames
-    .map((name) => `import { ${name}Tool } from './${name}.js';`)
+    .map((name) => `import { ${name}ToolWithClient } from './${name}.js';`)
     .join("\n");
 
-  const exports = toolNames.map((name) => `  ${name}: ${name}Tool`).join(",\n");
+  const exportsWithDefaultClient = toolNames
+    .map((name) => `  ${name}: ${name}ToolWithClient(getMcpClient)`)
+    .join(",\n");
+
+  const exportsWithClient = toolNames
+    .map((name) => `  ${name}: ${name}ToolWithClient(() => client)`)
+    .join(",\n");
 
   // Generate export name based on domain
   const exportName = generateMcpExportName(mcpUrl);
 
   return `// Auto-generated index file for MCP tools
 // Source: ${mcpUrl}
+import { getMcpClient } from './client.js';
+import type { Client } from '@modelcontextprotocol/sdk/client/index.js';
 ${imports}
 
+// Exports using a default client
 export const ${exportName}Tools = {
-${exports}
+${exportsWithDefaultClient}
 } as const;
+
+export const ${exportName}ToolsWithClient = (client: Promise<Client> | Client) => ({
+${exportsWithClient}
+} as const);
 
 // Individual tool exports
 ${toolNames
-  .map((name) => `export { ${name}Tool } from './${name}.js';`)
+  .map(
+    (name) => `export const ${name}Tool = ${name}ToolWithClient(getMcpClient);`
+  )
   .join("\n")}
 `;
 }
@@ -173,7 +213,7 @@ function generateMcpExportName(url: string): string {
     // Remove common prefixes and convert to camelCase
     let name = hostname
       .replace(/^(www\.|api\.|mcp\.)/i, "") // Remove common prefixes
-      .replace(/\.(com|org|net|io|dev|app)$/i, "") // Remove common TLDs
+      .replace(/\.(com|org|net|io|dev|app|ai|co)$/i, "") // Remove common TLDs
       .split(".")
       .map((part, index) => {
         // First part lowercase, rest capitalized
@@ -348,6 +388,15 @@ async function main() {
     console.log(`Found ${tools.length} tools from ${mcpUrlOrPath}`);
     console.log(`Generating AI SDK wrappers in: ${basePath}/`);
 
+    // Ensure directory exists
+    await mkdir(basePath, { recursive: true });
+
+    // Generate shared client file first
+    const clientPath = join(basePath, "client.ts");
+    const clientCode = generateClientFile(mcpUrlOrPath, useSSE);
+    await writeFile(clientPath, clientCode, "utf-8");
+    console.log(`Generated: ${clientPath} ✓`);
+
     const generatedTools: string[] = [];
 
     for (const tool of tools) {
@@ -355,9 +404,6 @@ async function main() {
         const sanitizedName = validateToolName(tool.name);
         const filePath = join(basePath, `${sanitizedName}.ts`);
         const toolCode = generateAISDKTool(tool, mcpUrlOrPath, useSSE);
-
-        // Ensure directory exists
-        await mkdir(dirname(filePath), { recursive: true });
 
         // Write the tool file
         await writeFile(filePath, toolCode, "utf-8");

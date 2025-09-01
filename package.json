@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "pnpm run build && dist/mcp-tools-cli.js",
+    "dev": "dist/mcp-tools-cli.js",
     "prepublishOnly": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

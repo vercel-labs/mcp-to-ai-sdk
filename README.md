@@ -32,28 +32,42 @@ mcp-to-ai-sdk /path/to/mcp-server.js
    - Proper Vercel AI SDK `tool()` definitions
    - Zod schema validation converted from JSON Schema
    - Type-safe parameter handling
-   - MCP client connection management
+   - Shared MCP client for optimal performance
 3. **Creates Convenient Exports**: Generates an `index.ts` file that exports:
    - Default export: Domain-based object (e.g., `mcpGrep` for mcp.grep.app) with all tools `{toolName: toolImplementation}`
    - Individual named exports for each tool
-4. **Outputs Ready-to-Use Files**: Generates files in `samples/{hostname}/` format
+4. **Creates Shared Client**: Generates a `client.ts` file with:
+   - Lazy connection on first use
+   - Connection pooling and reuse
+   - Automatic timeout handling
+   - Graceful cleanup functions
+5. **Outputs Ready-to-Use Files**: Generates files in `samples/{hostname}/` format
 
 ## Generated Code Features
 
 - ✅ **Full TypeScript support** with proper types throughout
 - ✅ **Zod schema validation** with descriptions and defaults
-- ✅ **Automatic MCP client management** (connect/execute/close)
+- ✅ **Shared MCP client** for optimal performance and connection reuse
 - ✅ **Multiple transport support** (StreamableHttp, SSE, Stdio)
 - ✅ **Robust error handling** and content type conversion
 - ✅ **Both named and default exports** for flexibility
+- ✅ **Lazy connection** - client connects only when first tool is used
+
+## Generated File Structure
+
+```
+samples/mcp.grep.app/
+├── client.ts          # Shared MCP client with lazy connection
+├── index.ts           # Domain-based exports (mcpGrepTools)
+└── searchGitHub.ts    # Individual tool implementation
+```
 
 ## Example Generated Tool
 
 ```typescript
 import { tool } from 'ai';
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { z } from 'zod';
+import { getMcpClient } from './client.js';
 
 export const searchGitHubTool = tool({
   description: "Find real-world code examples from GitHub repositories",
@@ -62,37 +76,33 @@ export const searchGitHubTool = tool({
     language: z.array(z.string()).optional().describe("Programming languages")
   }),
   execute: async (args): Promise<string> => {
-    const transport = new StreamableHTTPClientTransport(new URL("https://mcp.grep.app"));
-    const client = new Client({
-      name: "ai-sdk-mcp-wrapper",
-      version: "1.0.0"
-    }, {
-      capabilities: {}
+    const client = await getMcpClient(); // Shared client instance
+    
+    const result = await client.callTool({
+      name: "searchGitHub",
+      arguments: args
     });
-
-    try {
-      await client.connect(transport);
-      const result = await client.callTool({
-        name: "searchGitHub",
-        arguments: args
-      });
-      
-      // Handle different content types from MCP
-      if (Array.isArray(result.content)) {
-        return result.content
-          .map((item: unknown) => typeof item === 'string' ? item : JSON.stringify(item))
-          .join('\n');
-      } else if (typeof result.content === 'string') {
-        return result.content;
-      } else {
-        return JSON.stringify(result.content);
-      }
-    } finally {
-      await client.close();
+    
+    // Handle different content types from MCP
+    if (Array.isArray(result.content)) {
+      return result.content
+        .map((item: unknown) => typeof item === 'string' ? item : JSON.stringify(item))
+        .join('\n');
+    } else if (typeof result.content === 'string') {
+      return result.content;
+    } else {
+      return JSON.stringify(result.content);
     }
   }
 });
 ```
+
+## Shared Client Benefits
+
+- **Performance**: Single connection reused across all tools
+- **Lazy Loading**: Connection established only when first tool is used
+- **Automatic Handling**: Connection timeout, error handling, and cleanup
+- **Memory Efficient**: No duplicate client instances per tool
 
 ## Using Generated Tools
 

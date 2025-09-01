@@ -48,45 +48,57 @@ mcps/mcp.grep.app/
 
 ```typescript
 import { tool } from "ai";
+import { type Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { z } from "zod";
-import { getMcpClient } from "./client.js";
 
-export const searchGitHubTool = tool({
-  description: "Find real-world code examples from GitHub repositories",
-  inputSchema: z.object({
-    query: z.string().describe("Code pattern to search for"),
-    language: z.array(z.string()).optional().describe("Programming languages"),
-  }),
-  execute: async (args): Promise<string> => {
-    const client = await getMcpClient(); // Shared client instance
+// Auto-generated wrapper for MCP tool: searchGitHub
+// Source: https://mcp.grep.app
+export const searchGitHubToolWithClient = (
+  getClient: () => Promise<Client> | Client
+) =>
+  tool({
+    description: "Find real-world code examples from GitHub repositories",
+    inputSchema: z.object({
+      query: z.string().describe("Code pattern to search for"),
+      language: z
+        .array(z.string())
+        .optional()
+        .describe("Programming languages"),
+    }),
+    execute: async (args): Promise<string> => {
+      const client = await getClient();
+      const result = await client.callTool({
+        name: "searchGitHub",
+        arguments: args,
+      });
 
-    const result = await client.callTool({
-      name: "searchGitHub",
-      arguments: args,
-    });
-
-    // Handle different content types from MCP
-    if (Array.isArray(result.content)) {
-      return result.content
-        .map((item: unknown) =>
-          typeof item === "string" ? item : JSON.stringify(item)
-        )
-        .join("\n");
-    } else if (typeof result.content === "string") {
-      return result.content;
-    } else {
-      return JSON.stringify(result.content);
-    }
-  },
-});
+      // Handle different content types from MCP
+      if (Array.isArray(result.content)) {
+        return result.content
+          .map((item: unknown) =>
+            typeof item === "string" ? item : JSON.stringify(item)
+          )
+          .join("\n");
+      } else if (typeof result.content === "string") {
+        return result.content;
+      } else {
+        return JSON.stringify(result.content);
+      }
+    },
+  });
 ```
 
-## Shared Client Benefits
+## Tool Factory Pattern
 
-- **Performance**: Single connection reused across all tools
-- **Lazy Loading**: Connection established only when first tool is used
-- **Automatic Handling**: Connection timeout, error handling, and cleanup
-- **Memory Efficient**: No duplicate client instances per tool
+All generated tools use a factory pattern that supports both default clients and custom client injection:
+
+- **`{toolName}ToolWithClient`**: Factory function that accepts a client getter for dependency injection
+- **`{toolName}Tool`**: Ready-to-use tool with default shared client from index.ts
+- **`mcp{Domain}Tools`**: Object containing all tools using default client
+- **`mcp{Domain}ToolsWithClient`**: Factory function to create all tools with custom client
+
+The generated client.ts file configures a default client shared between all MCP tools of that
+vendor. You may edit this file or use the `WithClient` exports to provide your own clients.
 
 ## Using Generated Tools
 
@@ -95,11 +107,11 @@ export const searchGitHubTool = tool({
 ```typescript
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import mcpGrep from "./mcps/mcp.grep.app/index.js"; // Domain-based export name
+import { mcpGrepTools } from "./mcps/mcp.grep.app"; // Domain-based export name
 
 const result = await generateText({
   model: openai("gpt-4"),
-  tools: mcpGrep, // Use all tools from the MCP server
+  tools: mcpGrepTools, // Use all tools from the MCP server
   prompt: "Find examples of React hooks usage",
 });
 ```
@@ -109,7 +121,7 @@ const result = await generateText({
 ```typescript
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { searchGitHubTool } from "./mcps/mcp.grep.app/index.js";
+import { searchGitHubTool } from "./mcps/mcp.grep.app";
 
 const result = await generateText({
   model: openai("gpt-4"),
@@ -120,18 +132,37 @@ const result = await generateText({
 });
 ```
 
-### Option 3: Import directly from individual files
+### Option 3: Import directly from individual files with custom client
 
 ```typescript
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { searchGitHubTool } from "./mcps/mcp.grep.app/searchGitHub.js";
+import { searchGitHubToolWithClient } from "./mcps/mcp.grep.app/searchGitHub.js";
+import { getMcpClient } from "./mcps/mcp.grep.app/client.js";
 
 const result = await generateText({
   model: openai("gpt-4"),
   tools: {
-    searchGitHub: searchGitHubTool,
+    searchGitHub: searchGitHubToolWithClient(getMcpClient),
   },
+  prompt: "Find examples of React hooks usage",
+});
+```
+
+### Option 4: Use client injection for all tools
+
+```typescript
+import { generateText } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { mcpGrepToolsWithClient } from "./mcps/mcp.grep.app/index.js";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+
+// Create your custom client
+const customClient = new Client(/* ... */);
+
+const result = await generateText({
+  model: openai("gpt-4"),
+  tools: mcpGrepToolsWithClient(customClient), // All tools with custom client
   prompt: "Find examples of React hooks usage",
 });
 ```

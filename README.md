@@ -1,6 +1,14 @@
 # MCP to AI SDK
 
-A CLI tool that generates Vercel AI SDK wrappers for Model Context Protocol (MCP) tools.
+A CLI tool that generates Vercel AI SDK stubs for Model Context Protocol (MCP) tools.
+
+Why would you do this over using the MCP directly:
+
+- Security: Prevents possible prompt injection from unexpected changes to the MCP server.
+- Security: Prevents security issues from unexpected new tools (e.g. when the server introduces a new delete function).
+- Security: Allows overridding tool implementations with narrower arguments. E.g. by limiting queries to a single tenant or similar specialization of broad tools.
+- Quality: Prevents quality regressions from unexpected changes to the MCP server.
+- Quality: Allows tuning of tool call precision in the context of your project.
 
 ## Installation
 
@@ -25,34 +33,6 @@ mcp-to-ai-sdk --sse https://example.com/mcp/sse
 mcp-to-ai-sdk /path/to/mcp-server.js
 ```
 
-## What it does
-
-1. **Discovers MCP Tools**: Connects to an MCP server and fetches all available tool definitions
-2. **Generates Type-Safe Wrappers**: Creates individual TypeScript files for each tool with:
-   - Proper Vercel AI SDK `tool()` definitions
-   - Zod schema validation converted from JSON Schema
-   - Type-safe parameter handling
-   - Shared MCP client for optimal performance
-3. **Creates Convenient Exports**: Generates an `index.ts` file that exports:
-   - Default export: Domain-based object (e.g., `mcpGrep` for mcp.grep.app) with all tools `{toolName: toolImplementation}`
-   - Individual named exports for each tool
-4. **Creates Shared Client**: Generates a `client.ts` file with:
-   - Lazy connection on first use
-   - Connection pooling and reuse
-   - Automatic timeout handling
-   - Graceful cleanup functions
-5. **Outputs Ready-to-Use Files**: Generates files in `samples/{hostname}/` format
-
-## Generated Code Features
-
-- ✅ **Full TypeScript support** with proper types throughout
-- ✅ **Zod schema validation** with descriptions and defaults
-- ✅ **Shared MCP client** for optimal performance and connection reuse
-- ✅ **Multiple transport support** (StreamableHttp, SSE, Stdio)
-- ✅ **Robust error handling** and content type conversion
-- ✅ **Both named and default exports** for flexibility
-- ✅ **Lazy connection** - client connects only when first tool is used
-
 ## Generated File Structure
 
 ```
@@ -65,35 +45,37 @@ samples/mcp.grep.app/
 ## Example Generated Tool
 
 ```typescript
-import { tool } from 'ai';
-import { z } from 'zod';
-import { getMcpClient } from './client.js';
+import { tool } from "ai";
+import { z } from "zod";
+import { getMcpClient } from "./client.js";
 
 export const searchGitHubTool = tool({
   description: "Find real-world code examples from GitHub repositories",
   inputSchema: z.object({
     query: z.string().describe("Code pattern to search for"),
-    language: z.array(z.string()).optional().describe("Programming languages")
+    language: z.array(z.string()).optional().describe("Programming languages"),
   }),
   execute: async (args): Promise<string> => {
     const client = await getMcpClient(); // Shared client instance
-    
+
     const result = await client.callTool({
       name: "searchGitHub",
-      arguments: args
+      arguments: args,
     });
-    
+
     // Handle different content types from MCP
     if (Array.isArray(result.content)) {
       return result.content
-        .map((item: unknown) => typeof item === 'string' ? item : JSON.stringify(item))
-        .join('\n');
-    } else if (typeof result.content === 'string') {
+        .map((item: unknown) =>
+          typeof item === "string" ? item : JSON.stringify(item)
+        )
+        .join("\n");
+    } else if (typeof result.content === "string") {
       return result.content;
     } else {
       return JSON.stringify(result.content);
     }
-  }
+  },
 });
 ```
 
@@ -107,45 +89,48 @@ export const searchGitHubTool = tool({
 ## Using Generated Tools
 
 ### Option 1: Import all tools from index
+
 ```typescript
-import { generateText } from 'ai';
-import { openai } from '@ai-sdk/openai';
-import mcpGrep from './samples/mcp.grep.app/index.js'; // Domain-based export name
+import { generateText } from "ai";
+import { openai } from "@ai-sdk/openai";
+import mcpGrep from "./samples/mcp.grep.app/index.js"; // Domain-based export name
 
 const result = await generateText({
-  model: openai('gpt-4'),
+  model: openai("gpt-4"),
   tools: mcpGrep, // Use all tools from the MCP server
-  prompt: 'Find examples of React hooks usage'
+  prompt: "Find examples of React hooks usage",
 });
 ```
 
 ### Option 2: Import specific tools
+
 ```typescript
-import { generateText } from 'ai';
-import { openai } from '@ai-sdk/openai';
-import { searchGitHubTool } from './samples/mcp.grep.app/index.js';
+import { generateText } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { searchGitHubTool } from "./samples/mcp.grep.app/index.js";
 
 const result = await generateText({
-  model: openai('gpt-4'),
+  model: openai("gpt-4"),
   tools: {
-    searchGitHub: searchGitHubTool
+    searchGitHub: searchGitHubTool,
   },
-  prompt: 'Find examples of React hooks usage'
+  prompt: "Find examples of React hooks usage",
 });
 ```
 
 ### Option 3: Import directly from individual files
+
 ```typescript
-import { generateText } from 'ai';
-import { openai } from '@ai-sdk/openai';
-import { searchGitHubTool } from './samples/mcp.grep.app/searchGitHub.js';
+import { generateText } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { searchGitHubTool } from "./samples/mcp.grep.app/searchGitHub.js";
 
 const result = await generateText({
-  model: openai('gpt-4'),
+  model: openai("gpt-4"),
   tools: {
-    searchGitHub: searchGitHubTool
+    searchGitHub: searchGitHubTool,
   },
-  prompt: 'Find examples of React hooks usage'
+  prompt: "Find examples of React hooks usage",
 });
 ```
 

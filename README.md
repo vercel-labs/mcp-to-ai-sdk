@@ -31,6 +31,10 @@ mcp-to-ai-sdk --sse https://example.com/mcp/sse
 
 # Generate wrappers for local MCP servers
 mcp-to-ai-sdk /path/to/mcp-server.js
+
+# Add authentication headers for protected MCP endpoints
+mcp-to-ai-sdk -H 'Authorization: Bearer your-token' https://api.example.com/mcp
+mcp-to-ai-sdk -H 'X-API-Key: your-key' -H 'Authorization: Bearer your-token' https://api.example.com/mcp
 ```
 
 ## Generated File Structure
@@ -131,6 +135,26 @@ const result = await generateText({
     searchGitHub: searchGitHubTool,
   },
   prompt: "Find examples of React hooks usage",
+});
+```
+
+## Authentication & Headers
+
+When using `-H` flags to pass headers during tool discovery:
+
+- Headers are used to authenticate with the MCP server during discovery
+- Generated client files include header placeholders with `TODO` values for security
+- You'll need to replace the TODO placeholders with actual values in your runtime environment
+
+Example generated client with headers:
+```typescript
+const transport = new StreamableHTTPClientTransport(new URL("https://api.example.com/mcp"), { 
+  requestInit: { 
+    headers: {
+      "Authorization": "TODO: Replace with your actual value",
+      "X-API-Key": "TODO: Replace with your actual value"
+    } 
+  } 
 });
 ```
 

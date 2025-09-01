@@ -7,6 +7,7 @@ import { generateClientFile } from "./lib/client-generator.js";
 import { generateIndexFile } from "./lib/index-generator.js";
 import { fetchToolDefinitions } from "./lib/mcp-client.js";
 import { urlToPath, parseHeader } from "./lib/utils.js";
+import { formatCode } from "./lib/formatter.js";
 
 
 async function main() {
@@ -65,7 +66,8 @@ Examples:
         // Generate shared client file first
         const clientPath = join(basePath, "client.ts");
         const clientCode = generateClientFile(mcpUrlOrPath, useSSE, headers);
-        await writeFile(clientPath, clientCode, "utf-8");
+        const formattedClientCode = await formatCode(clientCode, clientPath);
+        await writeFile(clientPath, formattedClientCode, "utf-8");
         console.log(`Generated: ${clientPath} ✓`);
 
         const generatedTools: string[] = [];
@@ -75,9 +77,10 @@ Examples:
             const sanitizedName = validateToolName(tool.name);
             const filePath = join(basePath, `${sanitizedName}.ts`);
             const toolCode = generateAISDKTool(tool, mcpUrlOrPath, useSSE);
+            const formattedToolCode = await formatCode(toolCode, filePath);
 
             // Write the tool file
-            await writeFile(filePath, toolCode, "utf-8");
+            await writeFile(filePath, formattedToolCode, "utf-8");
 
             console.log(`Generated: ${filePath} ✓`);
             generatedTools.push(sanitizedName);
@@ -98,8 +101,9 @@ Examples:
         if (generatedTools.length > 0) {
           const indexPath = join(basePath, "index.ts");
           const indexCode = generateIndexFile(generatedTools, mcpUrlOrPath);
+          const formattedIndexCode = await formatCode(indexCode, indexPath);
 
-          await writeFile(indexPath, indexCode, "utf-8");
+          await writeFile(indexPath, formattedIndexCode, "utf-8");
           console.log(`Generated: ${indexPath} ✓`);
         }
 

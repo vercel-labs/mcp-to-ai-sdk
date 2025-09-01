@@ -1,29 +1,29 @@
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
 let connectionPromise: Promise<Client> | null = null;
-
 export async function getMcpClient(): Promise<Client> {
-
   if (connectionPromise) {
     return connectionPromise;
   }
 
-  return connectionPromise = connectToMcp();
+  return (connectionPromise = connectToMcp());
 }
 
 async function connectToMcp(): Promise<Client> {
-  const transport = new StreamableHTTPClientTransport(new URL("https://huggingface.co/mcp"));
+  const transport = new StreamableHTTPClientTransport(
+    new URL("https://huggingface.co/mcp"),
+  );
   const client = new Client(
     {
       name: "ai-sdk-mcp-wrapper",
-      version: "1.0.0"
+      version: "1.0.0",
     },
     {
-      capabilities: {}
-    }
+      capabilities: {},
+    },
   );
-  await client.connect(transport)
+  await client.connect(transport);
   return client;
 }
 

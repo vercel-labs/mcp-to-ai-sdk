@@ -1,6 +1,6 @@
 # MCP to AI SDK
 
-A CLI tool that generates Vercel AI SDK stubs for Model Context Protocol (MCP) tools.
+A CLI tool that generates Vercel AI SDK stubs for Model Context Protocol (MCP) tools. Think of it as "shadcn for MCP".
 
 Why would you do this over using the MCP directly:
 
@@ -88,17 +88,10 @@ export const searchGitHubToolWithClient = (
   });
 ```
 
-## Tool Factory Pattern
+## Default client
 
-All generated tools use a factory pattern that supports both default clients and custom client injection:
-
-- **`{toolName}ToolWithClient`**: Factory function that accepts a client getter for dependency injection
-- **`{toolName}Tool`**: Ready-to-use tool with default shared client from index.ts
-- **`mcp{Domain}Tools`**: Object containing all tools using default client
-- **`mcp{Domain}ToolsWithClient`**: Factory function to create all tools with custom client
-
-The generated client.ts file configures a default client shared between all MCP tools of that
-vendor. You may edit this file or use the `WithClient` exports to provide your own clients.
+The package generates a default client shared between all tools from a given MCP servers.
+You may customize connection parameters by editing the generated `client.ts` file.
 
 ## Using Generated Tools
 

@@ -12,6 +12,8 @@ Why would you do this over using the MCP directly:
 
 [See samples of generated output.](https://github.com/vercel-labs/mcp-to-ai-sdk/tree/main/mcps)
 
+[See sample usage of MCP stubs.](https://github.com/vercel-labs/mcp-to-ai-sdk/blob/main/samples/grep-app-test.ts)
+
 ## Installation
 
 ```bash

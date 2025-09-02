@@ -7,6 +7,7 @@ Why would you do this over using the MCP directly:
 - Security: Prevents possible prompt injection from unexpected changes to the MCP server tool definitions.
 - Security: Prevents security issues from unexpected new tools (e.g. when the server introduces a new delete function which your agent is not expected to call).
 - Security: Allows overridding tool implementations with narrower arguments. E.g. by limiting queries to a single tenant or similar specialization of broad tools.
+- Quality/cost: High context usage from unneeded functions.  
 - Quality: Prevents quality regressions from unexpected changes to the MCP server.
 - Quality: Allows tuning of tool call precision in the context of your project.
 

@@ -5,7 +5,7 @@ import { z } from "zod";
 // Auto-generated wrapper for MCP tool: searchGitHub
 // Source: https://mcp.grep.app
 export const searchGitHubToolWithClient = (
-  getClient: () => Promise<Client> | Client,
+  getClient: () => Promise<Client> | Client
 ) =>
   tool({
     description: `Find real-world code examples from over a million public GitHub repositories to help answer programming questions.
@@ -34,7 +34,7 @@ Filter by language, repository, or file path to narrow results.`,
         query: z
           .string()
           .describe(
-            `The literal code pattern to search for (e.g., 'useState(', 'export function'). Use actual code that would appear in files, not keywords or questions.`,
+            `The literal code pattern to search for (e.g., 'useState(', 'export function'). Use actual code that would appear in files, not keywords or questions.`
           ),
         matchCase: z
           .boolean()
@@ -53,7 +53,7 @@ Filter by language, repository, or file path to narrow results.`,
           .describe(
             `Filter by repository.
             Examples: 'facebook/react', 'microsoft/vscode', 'vercel/ai'.
-            Can match partial names, for example 'vercel/' will find repositories in the vercel org.`,
+            Can match partial names, for example 'vercel/' will find repositories in the vercel org.`
           )
           .optional(),
         path: z
@@ -61,20 +61,21 @@ Filter by language, repository, or file path to narrow results.`,
           .describe(
             `Filter by file path.
             Examples: 'src/components/Button.tsx', 'README.md'.
-            Can match partial paths, for example '/route.ts' will find route.ts files at any level.`,
+            Can match partial paths, for example '/route.ts' will find route.ts files at any level.`
           )
           .optional(),
         language: z
           .array(z.string())
           .describe(
             `Filter by programming language.
-            Examples: ['TypeScript', 'TSX'], ['JavaScript'], ['Python'], ['Java'], ['C#'], ['Markdown'], ['YAML']`,
+            Examples: ['TypeScript', 'TSX'], ['JavaScript'], ['Python'], ['Java'], ['C#'], ['Markdown'], ['YAML']`
           )
           .optional(),
       })
       .strict(),
     execute: async (args): Promise<string> => {
       const client = await getClient();
+
       const result = await client.callTool({
         name: "searchGitHub",
         arguments: args,
@@ -84,7 +85,7 @@ Filter by language, repository, or file path to narrow results.`,
       if (Array.isArray(result.content)) {
         return result.content
           .map((item: unknown) =>
-            typeof item === "string" ? item : JSON.stringify(item),
+            typeof item === "string" ? item : JSON.stringify(item)
           )
           .join("\n");
       } else if (typeof result.content === "string") {

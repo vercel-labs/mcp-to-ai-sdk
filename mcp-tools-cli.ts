@@ -120,7 +120,11 @@ Examples:
     .action(
       async (
         mcpUrlOrPath: string,
-        options: { sse?: boolean; yes?: boolean; header: string[] }
+        options: { 
+          sse?: boolean; 
+          yes?: boolean; 
+          header: string[];
+        }
       ) => {
         const useSSE = options.sse || false;
         const skipPrompt = options.yes || false;
@@ -141,12 +145,26 @@ Examples:
           process.exit(1);
         }
 
+        let oauthToken: string | undefined;
+        
         try {
+          // Store the original headers to check if OAuth was added
+          const originalHeaders = { ...headers };
+          
           const tools = await fetchToolDefinitions(
             mcpUrlOrPath,
             useSSE,
             headers
           );
+          
+          // Check if OAuth token was added during fetchToolDefinitions
+          if (headers["Authorization"] && !originalHeaders["Authorization"]) {
+            const authHeader = headers["Authorization"];
+            if (authHeader.startsWith("Bearer ")) {
+              oauthToken = authHeader.substring(7);
+            }
+          }
+          
           const basePath = "mcps/" + urlToPath(mcpUrlOrPath);
 
           console.log(`Found ${tools.length} tools from ${mcpUrlOrPath}`);
@@ -160,7 +178,7 @@ Examples:
 
           // Generate shared client file first
           const clientPath = join(basePath, "client.ts");
-          const clientCode = generateClientFile(mcpUrlOrPath, useSSE, headers);
+          const clientCode = generateClientFile(mcpUrlOrPath, useSSE, headers, oauthToken);
           const formattedClientCode = await formatCode(clientCode, clientPath);
           const clientWritten = await safeWriteFile(
             clientPath,

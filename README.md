@@ -18,24 +18,24 @@ Why would you do this over using the MCP directly:
 ## Installation
 
 ```bash
-npx mcp-to-ai-sdk <MCP_URL_OR_PATH>
+npx mcp-to-ai-sdk@latest <MCP_URL_OR_PATH>
 ```
 
 ## Usage
 
 ```bash
 # Generate wrappers for HTTP MCP endpoints (uses StreamableHttp by default)
-npx mcp-to-ai-sdk https://mcp.grep.app
+npx mcp-to-ai-sdk@latest https://mcp.grep.app
 
 # Use Server-Sent Events transport
-npx mcp-to-ai-sdk --sse https://example.com/mcp/sse
+npx mcp-to-ai-sdk@latest --sse https://example.com/mcp/sse
 
 # Generate wrappers for local MCP servers
-npx mcp-to-ai-sdk /path/to/mcp-server.js
+npx mcp-to-ai-sdk@latest /path/to/mcp-server.js
 
 # Add authentication headers for protected MCP endpoints
-npx mcp-to-ai-sdk -H 'Authorization: Bearer your-token' https://api.example.com/mcp
-npx mcp-to-ai-sdk -H 'X-API-Key: your-key' -H 'Authorization: Bearer your-token' https://api.example.com/mcp
+npx mcp-to-ai-sdk@latest -H 'Authorization: Bearer your-token' https://api.example.com/mcp
+npx mcp-to-ai-sdk@latest -H 'X-API-Key: your-key' -H 'Authorization: Bearer your-token' https://api.example.com/mcp
 ```
 
 ## Generated File Structure
@@ -95,6 +95,14 @@ export const searchGitHubToolWithClient = (
 
 The package generates a default client shared between all tools from a given MCP servers.
 You may customize connection parameters by editing the generated `client.ts` file.
+
+## Prerequisites
+
+To use the generated output, install the required dependencies in your project:
+
+```bash
+npm install ai zod @modelcontextprotocol/sdk
+```
 
 ## Using Generated Tools
 
@@ -165,11 +173,25 @@ const result = await generateText({
 
 ## Authentication & Headers
 
+### OAuth Authentication
+
+For MCP servers that require OAuth authentication, the CLI will automatically handle the complete authentication flow:
+
+- Detects when a server requires OAuth authentication
+- Spins up a temporary local web server to handle the OAuth callback
+- Opens your browser to complete the authentication flow
+- Automatically captures the auth tokens and proceeds with tool discovery
+- Downloads all available tool definitions after successful authentication
+
+### Manual Headers
+
 When using `-H` flags to pass headers during tool discovery:
 
 - Headers are used to authenticate with the MCP server during discovery
 - Generated client files include header placeholders with `TODO` values for security
 - You'll need to replace the TODO placeholders with actual values in your runtime environment
+
+**Important**: While the CLI successfully downloads tool definitions from authenticated servers, you'll need to configure authentication in the generated client files for actual tool usage in your agent.
 
 Example generated client with headers:
 

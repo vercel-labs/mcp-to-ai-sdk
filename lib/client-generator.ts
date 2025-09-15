@@ -28,20 +28,23 @@ export function generateClientFile(
   if (oauthToken) {
     allHeaders["Authorization"] = `Bearer ${oauthToken}`;
   }
-  
+
   const hasHeaders = Object.keys(allHeaders).length > 0;
   let requestInit = "";
   if (hasHeaders) {
     // Replace header values with TODO placeholders to avoid embedding secrets
-    const todoHeaders = Object.keys(allHeaders).reduce((acc, key) => {
-      if (key === "Authorization" && oauthToken) {
-        // For OAuth tokens, provide a placeholder that indicates token is needed
-        acc[key] = "Bearer YOUR_OAUTH_TOKEN";
-      } else {
-        acc[key] = "TODO: Replace with your actual value";
-      }
-      return acc;
-    }, {} as Record<string, string>);
+    const todoHeaders = Object.keys(allHeaders).reduce(
+      (acc, key) => {
+        if (key === "Authorization" && oauthToken) {
+          // For OAuth tokens, provide a placeholder that indicates token is needed
+          acc[key] = "Bearer YOUR_OAUTH_TOKEN";
+        } else {
+          acc[key] = "TODO: Replace with your actual value";
+        }
+        return acc;
+      },
+      {} as Record<string, string>
+    );
 
     requestInit = `, { requestInit: { headers: ${JSON.stringify(
       todoHeaders,
@@ -49,13 +52,14 @@ export function generateClientFile(
       2
     )} } }`;
   }
-
-  const oauthComment = oauthToken ? `
+  const oauthComment = oauthToken
+    ? `
 // Note: This MCP server requires OAuth authentication.
 // The token has been included in the headers below.
 // You may need to refresh the token periodically.
-` : "";
-  
+`
+    : "";
+
   return `import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { ${transportType} } from '@modelcontextprotocol/sdk/client/${transportImport}.js';
 ${oauthComment}

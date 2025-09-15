@@ -11,7 +11,10 @@
     "dev": "dist/mcp-tools-cli.js",
     "sample": "tsx samples/grep-app-test.ts",
     "prepublishOnly": "npm run build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "version-packages": "changeset version",
+    "changeset": "changeset",
+    "release": "pnpm build && changeset publish"
   },
   "keywords": [
     "mcp",

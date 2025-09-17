@@ -25,11 +25,11 @@
     "tools",
     "model-context-protocol"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Vercel",
   "files": [
     "dist/**/*"
   ],
+  "license": "Apache-2.0",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.4",
     "ai": "^5.0.29",

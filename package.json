@@ -1,6 +1,6 @@
 {
   "name": "mcp-to-ai-sdk",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "CLI tool to generate Vercel AI SDK wrappers for MCP tools",
   "main": "dist/mcp-tools-cli.js",
   "bin": {

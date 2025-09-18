@@ -1,5 +1,11 @@
 # mcp-to-ai-sdk
 
+## 0.1.1
+
+### Patch Changes
+
+- e4cc297: Support older servers that dont have protected resource metadata
+
 ## 0.1.0
 
 ### Minor Changes

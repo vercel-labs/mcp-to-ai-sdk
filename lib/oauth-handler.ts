@@ -421,7 +421,7 @@ export class OAuthHandler {
     try {
       // Construct well-known endpoint for authorization server metadata
       const url = new URL(authServerUrl);
-      
+
       // Try without path first (most common case)
       const metadataUrl = new URL(
         "/.well-known/oauth-authorization-server",
@@ -436,7 +436,7 @@ export class OAuthHandler {
       }
 
       // Try with path appended
-      if (url.pathname && url.pathname !== '/') {
+      if (url.pathname && url.pathname !== "/") {
         const pathMetadataUrl = new URL(
           `/.well-known/oauth-authorization-server${url.pathname}`,
           url.origin
@@ -524,20 +524,29 @@ export class OAuthHandler {
       // Step 1: Get Protected Resource Metadata
       const resourceMetadata = await this.getProtectedResourceMetadata(baseUrl);
 
+      let authServerUrl: string;
+      let authServerMetadata: AuthServerMetadata | null;
+
       if (
         !resourceMetadata ||
         !resourceMetadata.authorization_servers ||
         resourceMetadata.authorization_servers.length === 0
       ) {
-        return null;
+        // Fallback for older servers: try to get auth server metadata directly from base URL
+        console.log("Protected resource metadata not found, trying direct auth server metadata...");
+        authServerUrl = baseUrl;
+        authServerMetadata = await this.getAuthServerMetadata(authServerUrl);
+        
+        if (!authServerMetadata) {
+          return null;
+        }
+      } else {
+        // Step 2: Select first authorization server (could be enhanced to let user choose)
+        authServerUrl = resourceMetadata.authorization_servers[0];
+
+        // Step 3: Get Authorization Server Metadata
+        authServerMetadata = await this.getAuthServerMetadata(authServerUrl);
       }
-
-      // Step 2: Select first authorization server (could be enhanced to let user choose)
-      const authServerUrl = resourceMetadata.authorization_servers[0];
-
-      // Step 3: Get Authorization Server Metadata
-      const authServerMetadata =
-        await this.getAuthServerMetadata(authServerUrl);
 
       if (!authServerMetadata) {
         return null;
@@ -569,8 +578,8 @@ export class OAuthHandler {
         tokenUrl: authServerMetadata.token_endpoint,
         clientId: clientId,
         clientSecret: clientSecret,
-        resource: resourceMetadata.resource || url, // Use the canonical resource URI
-        scope: resourceMetadata.scopes_supported?.join(" "),
+        resource: resourceMetadata?.resource || url, // Use the canonical resource URI
+        scope: resourceMetadata?.scopes_supported?.join(" ") || authServerMetadata.scopes_supported?.join(" "),
       };
     } catch (error) {
       console.error("Failed to get OAuth configuration:", error);

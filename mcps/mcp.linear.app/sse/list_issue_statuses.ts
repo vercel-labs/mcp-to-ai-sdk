@@ -1,0 +1,35 @@
+import { tool } from "ai";
+import { type Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { z } from "zod";
+
+// Auto-generated wrapper for MCP tool: list_issue_statuses
+// Source: https://mcp.linear.app/sse
+export const list_issue_statusesToolWithClient = (
+  getClient: () => Promise<Client> | Client,
+) =>
+  tool({
+    description: "List available issue statuses in a Linear team",
+    inputSchema: z
+      .object({ team: z.string().describe("The team name or ID") })
+      .strict(),
+    execute: async (args): Promise<string> => {
+      const client = await getClient();
+      const result = await client.callTool({
+        name: "list_issue_statuses",
+        arguments: args,
+      });
+
+      // Handle different content types from MCP
+      if (Array.isArray(result.content)) {
+        return result.content
+          .map((item: unknown) =>
+            typeof item === "string" ? item : JSON.stringify(item),
+          )
+          .join("\n");
+      } else if (typeof result.content === "string") {
+        return result.content;
+      } else {
+        return JSON.stringify(result.content);
+      }
+    },
+  });

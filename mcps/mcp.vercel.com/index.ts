@@ -1,18 +1,18 @@
 // Auto-generated index file for MCP tools
 // Source: https://mcp.vercel.com
-import { getMcpClient } from "./client.js";
+import { getMcpClient } from "./client";
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { search_vercel_documentationToolWithClient } from "./search_vercel_documentation.js";
-import { deploy_to_vercelToolWithClient } from "./deploy_to_vercel.js";
-import { list_projectsToolWithClient } from "./list_projects.js";
-import { get_projectToolWithClient } from "./get_project.js";
-import { list_deploymentsToolWithClient } from "./list_deployments.js";
-import { get_deploymentToolWithClient } from "./get_deployment.js";
-import { get_deployment_build_logsToolWithClient } from "./get_deployment_build_logs.js";
-import { get_access_to_vercel_urlToolWithClient } from "./get_access_to_vercel_url.js";
-import { web_fetch_vercel_urlToolWithClient } from "./web_fetch_vercel_url.js";
-import { list_teamsToolWithClient } from "./list_teams.js";
-import { check_domain_availability_and_priceToolWithClient } from "./check_domain_availability_and_price.js";
+import { search_vercel_documentationToolWithClient } from "./search_vercel_documentation";
+import { deploy_to_vercelToolWithClient } from "./deploy_to_vercel";
+import { list_projectsToolWithClient } from "./list_projects";
+import { get_projectToolWithClient } from "./get_project";
+import { list_deploymentsToolWithClient } from "./list_deployments";
+import { get_deploymentToolWithClient } from "./get_deployment";
+import { get_deployment_build_logsToolWithClient } from "./get_deployment_build_logs";
+import { get_access_to_vercel_urlToolWithClient } from "./get_access_to_vercel_url";
+import { web_fetch_vercel_urlToolWithClient } from "./web_fetch_vercel_url";
+import { list_teamsToolWithClient } from "./list_teams";
+import { check_domain_availability_and_priceToolWithClient } from "./check_domain_availability_and_price";
 
 // Exports using a default client
 export const mcpVercelTools = {

@@ -1,16 +1,16 @@
 // Auto-generated index file for MCP tools
 // Source: https://huggingface.co/mcp
-import { getMcpClient } from "./client.js";
+import { getMcpClient } from "./client";
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { hf_whoamiToolWithClient } from "./hf_whoami.js";
-import { space_searchToolWithClient } from "./space_search.js";
-import { model_searchToolWithClient } from "./model_search.js";
-import { model_detailsToolWithClient } from "./model_details.js";
-import { paper_searchToolWithClient } from "./paper_search.js";
-import { dataset_searchToolWithClient } from "./dataset_search.js";
-import { dataset_detailsToolWithClient } from "./dataset_details.js";
-import { hf_doc_searchToolWithClient } from "./hf_doc_search.js";
-import { gr1_flux1_schnell_inferToolWithClient } from "./gr1_flux1_schnell_infer.js";
+import { hf_whoamiToolWithClient } from "./hf_whoami";
+import { space_searchToolWithClient } from "./space_search";
+import { model_searchToolWithClient } from "./model_search";
+import { model_detailsToolWithClient } from "./model_details";
+import { paper_searchToolWithClient } from "./paper_search";
+import { dataset_searchToolWithClient } from "./dataset_search";
+import { dataset_detailsToolWithClient } from "./dataset_details";
+import { hf_doc_searchToolWithClient } from "./hf_doc_search";
+import { gr1_flux1_schnell_inferToolWithClient } from "./gr1_flux1_schnell_infer";
 
 // Exports using a default client
 export const mcpHuggingfaceTools = {

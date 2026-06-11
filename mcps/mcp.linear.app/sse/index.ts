@@ -1,30 +1,30 @@
 // Auto-generated index file for MCP tools
 // Source: https://mcp.linear.app/sse
-import { getMcpClient } from "./client.js";
+import { getMcpClient } from "./client";
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { list_commentsToolWithClient } from "./list_comments.js";
-import { create_commentToolWithClient } from "./create_comment.js";
-import { list_cyclesToolWithClient } from "./list_cycles.js";
-import { get_documentToolWithClient } from "./get_document.js";
-import { list_documentsToolWithClient } from "./list_documents.js";
-import { get_issueToolWithClient } from "./get_issue.js";
-import { list_issuesToolWithClient } from "./list_issues.js";
-import { create_issueToolWithClient } from "./create_issue.js";
-import { update_issueToolWithClient } from "./update_issue.js";
-import { list_issue_statusesToolWithClient } from "./list_issue_statuses.js";
-import { get_issue_statusToolWithClient } from "./get_issue_status.js";
-import { list_issue_labelsToolWithClient } from "./list_issue_labels.js";
-import { create_issue_labelToolWithClient } from "./create_issue_label.js";
-import { list_projectsToolWithClient } from "./list_projects.js";
-import { get_projectToolWithClient } from "./get_project.js";
-import { create_projectToolWithClient } from "./create_project.js";
-import { update_projectToolWithClient } from "./update_project.js";
-import { list_project_labelsToolWithClient } from "./list_project_labels.js";
-import { list_teamsToolWithClient } from "./list_teams.js";
-import { get_teamToolWithClient } from "./get_team.js";
-import { list_usersToolWithClient } from "./list_users.js";
-import { get_userToolWithClient } from "./get_user.js";
-import { search_documentationToolWithClient } from "./search_documentation.js";
+import { list_commentsToolWithClient } from "./list_comments";
+import { create_commentToolWithClient } from "./create_comment";
+import { list_cyclesToolWithClient } from "./list_cycles";
+import { get_documentToolWithClient } from "./get_document";
+import { list_documentsToolWithClient } from "./list_documents";
+import { get_issueToolWithClient } from "./get_issue";
+import { list_issuesToolWithClient } from "./list_issues";
+import { create_issueToolWithClient } from "./create_issue";
+import { update_issueToolWithClient } from "./update_issue";
+import { list_issue_statusesToolWithClient } from "./list_issue_statuses";
+import { get_issue_statusToolWithClient } from "./get_issue_status";
+import { list_issue_labelsToolWithClient } from "./list_issue_labels";
+import { create_issue_labelToolWithClient } from "./create_issue_label";
+import { list_projectsToolWithClient } from "./list_projects";
+import { get_projectToolWithClient } from "./get_project";
+import { create_projectToolWithClient } from "./create_project";
+import { update_projectToolWithClient } from "./update_project";
+import { list_project_labelsToolWithClient } from "./list_project_labels";
+import { list_teamsToolWithClient } from "./list_teams";
+import { get_teamToolWithClient } from "./get_team";
+import { list_usersToolWithClient } from "./list_users";
+import { get_userToolWithClient } from "./get_user";
+import { search_documentationToolWithClient } from "./search_documentation";
 
 // Exports using a default client
 export const mcpLinearTools = {

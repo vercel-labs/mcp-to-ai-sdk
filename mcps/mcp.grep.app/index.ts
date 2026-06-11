@@ -1,8 +1,8 @@
 // Auto-generated index file for MCP tools
 // Source: https://mcp.grep.app
-import { getMcpClient } from "./client.js";
+import { getMcpClient } from "./client";
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { searchGitHubToolWithClient } from "./searchGitHub.js";
+import { searchGitHubToolWithClient } from "./searchGitHub";
 
 // Exports using a default client
 export const mcpGrepTools = {

@@ -36,7 +36,7 @@ export function generateMcpExportName(url: string): string {
 
 export function generateIndexFile(toolNames: string[], mcpUrl: string): string {
   const imports = toolNames
-    .map((name) => `import { ${name}ToolWithClient } from './${name}.js';`)
+    .map((name) => `import { ${name}ToolWithClient } from './${name}';`)
     .join("\n");
 
   const exportsWithDefaultClient = toolNames
@@ -52,7 +52,7 @@ export function generateIndexFile(toolNames: string[], mcpUrl: string): string {
 
   return `// Auto-generated index file for MCP tools
 // Source: ${mcpUrl}
-import { getMcpClient } from './client.js';
+import { getMcpClient } from './client';
 import type { Client } from '@modelcontextprotocol/sdk/client/index.js';
 ${imports}
 
@@ -68,7 +68,7 @@ ${exportsWithClient}
 // Individual tool exports
 ${toolNames
   .map(
-    (name) => `export const ${name}Tool = ${name}ToolWithClient(getMcpClient);`
+    (name) => `export const ${name}Tool = ${name}ToolWithClient(getMcpClient);`,
   )
   .join("\n")}
 `;

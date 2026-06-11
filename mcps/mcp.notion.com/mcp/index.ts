@@ -1,20 +1,20 @@
 // Auto-generated index file for MCP tools
 // Source: https://mcp.notion.com/mcp
-import { getMcpClient } from "./client.js";
+import { getMcpClient } from "./client";
 import type { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { searchToolWithClient } from "./search.js";
-import { fetchToolWithClient } from "./fetch.js";
-import { notioncreatepagesToolWithClient } from "./notioncreatepages.js";
-import { notionupdatepageToolWithClient } from "./notionupdatepage.js";
-import { notionmovepagesToolWithClient } from "./notionmovepages.js";
-import { notionduplicatepageToolWithClient } from "./notionduplicatepage.js";
-import { notioncreatedatabaseToolWithClient } from "./notioncreatedatabase.js";
-import { notionupdatedatabaseToolWithClient } from "./notionupdatedatabase.js";
-import { notioncreatecommentToolWithClient } from "./notioncreatecomment.js";
-import { notiongetcommentsToolWithClient } from "./notiongetcomments.js";
-import { notiongetusersToolWithClient } from "./notiongetusers.js";
-import { notiongetselfToolWithClient } from "./notiongetself.js";
-import { notiongetuserToolWithClient } from "./notiongetuser.js";
+import { searchToolWithClient } from "./search";
+import { fetchToolWithClient } from "./fetch";
+import { notioncreatepagesToolWithClient } from "./notioncreatepages";
+import { notionupdatepageToolWithClient } from "./notionupdatepage";
+import { notionmovepagesToolWithClient } from "./notionmovepages";
+import { notionduplicatepageToolWithClient } from "./notionduplicatepage";
+import { notioncreatedatabaseToolWithClient } from "./notioncreatedatabase";
+import { notionupdatedatabaseToolWithClient } from "./notionupdatedatabase";
+import { notioncreatecommentToolWithClient } from "./notioncreatecomment";
+import { notiongetcommentsToolWithClient } from "./notiongetcomments";
+import { notiongetusersToolWithClient } from "./notiongetusers";
+import { notiongetselfToolWithClient } from "./notiongetself";
+import { notiongetuserToolWithClient } from "./notiongetuser";
 
 // Exports using a default client
 export const mcpNotionTools = {
